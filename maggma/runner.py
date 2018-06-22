@@ -462,7 +462,7 @@ class Runner(MSONable):
                 - finalize aka cleanup(close all connections etc)
         """
         if mpi:
-            self.logger.info("Running with MPI Rank: {}".format(mpi_rank))
+            self.logger.info("Running with MPI")
             self.processor = MPIProcessor(self.builders)
         elif self.num_workers > 1:
             self.logger.info("Running with Multiprocessing")
