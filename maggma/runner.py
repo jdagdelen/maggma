@@ -199,33 +199,38 @@ class MPIProcessor(BaseProcessor):
 
         # 1.) Find free rank and take it
         mpi_rank = self.ranks.pop()
-        # 2.) Submit the job to that rank
-        self.comm.send({"type": "process", "builder_id": builder_id, "data": data}, dest=mpi_rank)
-        # 3.) Periodically poll for data back
-        result = None
-        while not result:
-            packet = self.comm.recv(source=mpi_rank)
-            if packet["type"] == "return":
-                result = packet["return"]
-                self.task_count.release()
-            elif packet["type"] == "error":
-                self.logger.error("MPI Rank {} Errored on Builder ID {}:\n{}".format(
-                    mpi_rank, builder_id, packet["error"]))
-                self.task_count.release()
-                return
-            else:
-                self.task_count.release()
-                return  # don't know what happened here, just quit
+        try:
+            # 2.) Submit the job to that rank
+            self.comm.send({"type": "process", "builder_id": builder_id, "data": data}, dest=mpi_rank)
+            # 3.) Wait for messages and process
+            result = None
+            while not result:
+                packet = self.comm.recv(source=mpi_rank)
+                if packet["type"] == "return":
+                    result = packet["return"]
+                    self.task_count.release()
+                elif packet["type"] == "error":
+                    self.logger.error("MPI Rank {} Errored on Builder ID {}:\n{}".format(
+                        mpi_rank, builder_id, packet["error"]))
+                    self.task_count.release()
+                    return
+                else:
+                    self.task_count.release()
+                    return  # don't know what happened here, just quit
+        except:
+            pass
+        finally:
+            # 4.) Return rank
+            self.ranks.append(mpi_rank)
 
-        # 6.) Update process progress bar
+        # 5.) Update process progress bar
         self.process_pbar.update(1)
 
-        # 7.) Save data
+        # 6.) Save data
         with self.update_data_condition:
             self.data.append(result)
             self.update_data_condition.notify_all()
-        # 8.) Return rank
-        self.ranks.append(mpi_rank)
+
 
     def clean_up_workers(self):
         """
