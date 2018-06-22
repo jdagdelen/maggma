@@ -154,9 +154,13 @@ class MPIProcessor(BaseProcessor):
         """
         total = None
         if isinstance(cursor, types.GeneratorType):
-            cursor = primed(cursor)
-            if hasattr(self.builder, "total"):
-                total = self.builder.total
+            try:
+                cursor = primed(cursor)
+                if hasattr(self.builder, "total"):
+                    total = self.builder.total
+            except StopIteration:
+                self.logger.debug("Get items returned empty iterator")
+
         elif hasattr(cursor, "__len__"):
             total = len(cursor)
         elif hasattr(cursor, "count"):
