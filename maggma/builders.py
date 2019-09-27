@@ -223,9 +223,9 @@ class MapBuilder(Builder, metaclass=ABCMeta):
             keys = source_keys_updated(source=self.source, target=self.target, query=self.query)
         else:
             try:
-				keys = self.source.distinct(self.source.key, self.query)
-			except OperationFailure:
-				keys = list(set([e[self.source.key] for e in self.source.query(self.query, [self.source.key])]))
+                keys = self.source.distinct(self.source.key, self.query)
+            except OperationFailure:
+                keys = list(set([e[self.source.key] for e in self.source.query(self.query, [self.source.key])]))
 
         self.logger.info("Processing {} items".format(len(keys)))
 
