@@ -8,6 +8,7 @@ import traceback
 from datetime import datetime
 from monty.json import MSONable, MontyDecoder
 from maggma.utils import source_keys_updated, grouper, Timeout
+from pymongo.errors import OperationFailure
 from time import time
 
 
@@ -221,7 +222,10 @@ class MapBuilder(Builder, metaclass=ABCMeta):
         if self.incremental:
             keys = source_keys_updated(source=self.source, target=self.target, query=self.query)
         else:
-            keys = self.source.distinct(self.source.key, self.query)
+            try:
+				keys = self.source.distinct(self.source.key, self.query)
+			except OperationFailure:
+				keys = list(set([e[self.source.key] for e in self.source.query(self.query, [self.source.key])]))
 
         self.logger.info("Processing {} items".format(len(keys)))
 
