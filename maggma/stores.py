@@ -17,7 +17,7 @@ import gridfs
 from itertools import groupby
 from operator import itemgetter
 from pymongo import MongoClient
-from pymongo.errors import OperationFailure
+from pymongo.errors import DocumentTooLarge
 from pydash import identity, set_
 
 from pymongo import ReplaceOne
@@ -328,8 +328,8 @@ class Mongolike(object):
             
             try:
                 keys = self.collection.distinct(key, filter=criteria, **kwargs)
-            except OperationFailure:
-                keys = list(set([e[key] for e in self.collection.query(criteria, [key])]))
+            except DocumentTooLarge:
+                keys = list(set([e[key] for e in self.collection.find(criteria, [key])]))
             
             return keys
 
