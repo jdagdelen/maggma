@@ -324,7 +324,13 @@ class Mongolike(object):
             return results
 
         else:
-            return self.collection.distinct(key, filter=criteria, **kwargs)
+            
+            try:
+                keys = self.source.distinct(key, filter=criteria, **kwargs)
+            except OperationFailure:
+                keys = list(set([e[key] for e in self.collection.query(criteria, [key])]))
+            
+            return keys
 
     def close(self):
         self.collection.database.client.close()
