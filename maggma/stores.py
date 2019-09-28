@@ -17,6 +17,7 @@ import gridfs
 from itertools import groupby
 from operator import itemgetter
 from pymongo import MongoClient
+from pymongo.errors import OperationFailure
 from pydash import identity, set_
 
 from pymongo import ReplaceOne
