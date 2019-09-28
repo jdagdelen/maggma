@@ -327,7 +327,7 @@ class Mongolike(object):
         else:
             
             try:
-                keys = self.source.distinct(key, filter=criteria, **kwargs)
+                keys = self.collection.distinct(key, filter=criteria, **kwargs)
             except OperationFailure:
                 keys = list(set([e[key] for e in self.collection.query(criteria, [key])]))
             
