@@ -329,7 +329,7 @@ class Mongolike(object):
             try:
                 keys = self.collection.distinct(key, filter=criteria, **kwargs)
             except DocumentTooLarge:
-                keys = list(set([e[key] for e in self.collection.find(criteria, [key])]))
+                keys = list(set([e[key] for e in self.collection.find(criteria, {key: 1})]))
             
             return keys
 
