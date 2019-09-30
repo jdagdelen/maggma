@@ -325,12 +325,12 @@ class Mongolike(object):
             return results
 
         else:
-            
-            try:
-                keys = self.collection.distinct(key, filter=criteria, **kwargs)
-            except DocumentTooLarge:
-                keys = list(set([e[key] for e in self.collection.find(criteria, {key: 1})]))
-            
+            keys_docs = self.collection.aggregate( [criteria, { "$group" : { _id : "$" + key }}])
+            keys = [entry["_id"] for entry in keys_docs]
+#             try:
+#                 keys = self.collection.distinct(key, filter=criteria, **kwargs)
+#             except DocumentTooLarge:
+#                 keys = list(set([e[key] for e in self.collection.find(criteria, {key: 1})]))
             return keys
 
     def close(self):
