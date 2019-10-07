@@ -17,7 +17,6 @@ import gridfs
 from itertools import groupby
 from operator import itemgetter
 from pymongo import MongoClient
-from pymongo.errors import DocumentTooLarge
 from pydash import identity, set_
 
 from pymongo import ReplaceOne
@@ -325,13 +324,7 @@ class Mongolike(object):
             return results
 
         else:
-            keys_docs = self.collection.aggregate( [criteria, { "$group" : { _id : "$" + key }}])
-            keys = [entry["_id"] for entry in keys_docs]
-#             try:
-#                 keys = self.collection.distinct(key, filter=criteria, **kwargs)
-#             except DocumentTooLarge:
-#                 keys = list(set([e[key] for e in self.collection.find(criteria, {key: 1})]))
-            return keys
+            return [e["_id"] for e in self.groupby(key, properties=key, criteria=criteria)]
 
     def close(self):
         self.collection.database.client.close()
